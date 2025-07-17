@@ -1,4 +1,5 @@
-(ns io.github.gaverhae.vatch)
+(ns io.github.gaverhae.vatch
+  (:require [clojure.walk :refer [postwalk]]))
 
 (defn literal-atom?
   [p]
