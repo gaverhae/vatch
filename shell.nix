@@ -7,6 +7,7 @@ pkgs.mkShell {
   buildInputs = with pkgs; [
     bash
     cacert
+    clojure
     curl
     jq
   ];
