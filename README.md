@@ -14,6 +14,9 @@ I spent too much time in Haskell land, and now I like modeling _some_ problems
 in the form of variants (in the sense of [this talk][variants]) and pattern
 matching (even though that [makes Rich Hickey cry a bit][sme]).
 
+[variants]: https://www.youtube.com/watch?v=ZQkIWWTygio
+[sme]: https://www.youtube.com/watch?v=SxdOUGdseq4
+
 You don't need a library to make a variant value, but variants only really
 shine when you can pattern match on them. This is what this library is for:
 pattern matching on variant values.
@@ -24,6 +27,9 @@ pattern matching on variant values.
 [`core.logic`][logic] and implements powerful pattern matching semantics over
 Clojure values, with advanced compile-time optimizations. It's great. If you're
 even remotely curious about pattern matching in Clojure, go and try it.
+
+[match]: https://github.com/clojure/core.match
+[logic]: https://github.com/clojure/core.logic
 
 It has a few things I dislike, though, and they have annoyed me enough that I
 decided to try and build my own instead. Specifically:
@@ -57,7 +63,12 @@ variants you expect, though that's outside the scope of this library.
 
 Todo.
 
-[variants]: https://www.youtube.com/watch?v=ZQkIWWTygio
-[sme]: https://www.youtube.com/watch?v=SxdOUGdseq4
-[match]: https://github.com/clojure/core.match
-[logic]: https://github.com/clojure/core.logic
+## Development
+
+> I assume you have [Nix] and [direnv] installed.
+
+[Nix]: https://nixos.org/download/
+[direnv]: https://direnv.net
+
+Run the tests with `clj -X:test`; start a file watcher that runs the tests on
+every change with `t test`.
