@@ -6,9 +6,7 @@
 
 (defn run-tests
   [dir]
-  (p/exec "bash" "-c"
-          (format "cd %s; fswatch -o -0 . | xargs -0 -n 1 bash -c 'clj -X:test'"
-                  dir)))
+  (p/exec "watchexec" "-w" "src" "-w" "test" "-c" "--" "clj" "-X:test"))
 
 (defn -main
   [dir & args]
