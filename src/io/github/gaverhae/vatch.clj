@@ -55,7 +55,9 @@
                                                        ~@(match-vector-pat-elems pat r))
                                                  `(let [~@(let-vector-pat-elems pat r)]
                                                     ~body)])
-                                :else (throw (ex-info "Unsupported pattern." {:pattern pat}))))))))))
+                                :else (throw (ex-info "Unsupported pattern." {:pattern pat}))))))
+         :else (throw (ex-info (str "Value did not vatch any clause: " (pr-str ~expr))
+                               {:expr ~expr}))))))
 
 (defmacro fatch
   [& forms]
