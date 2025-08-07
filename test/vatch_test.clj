@@ -46,7 +46,12 @@
                 [:a :b n] (+ n 3)
                 [:a x y] (+ x y)))]
     (is (= 8 (f [:a :b 5])))
-    (is (= 10 (f [:a 4 6]))))))
+    (is (= 10 (f [:a 4 6])))))
+  (testing "throws on unmatched expr"
+    (let [f (fn [v]
+              (vatch v
+                [:a b] b))]
+      (is (thrown? clojure.lang.ExceptionInfo (f [:does-not-match]))))))
 
 (deftest test-fatch
   (testing "lambda match"
