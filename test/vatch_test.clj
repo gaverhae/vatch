@@ -1,6 +1,6 @@
 (ns vatch-test
   (:require [clojure.test :refer [deftest are is testing]]
-            [io.github.gaverhae.vatch :refer [vatch fatch postvalk]]))
+            [io.github.gaverhae.vatch :as v :refer [vatch fatch postvalk]]))
 
 (deftest expansion
   (let [actual (macroexpand-1 `(vatch ~'v
@@ -40,6 +40,22 @@
                            :no-match)
                     :else (throw (ex-info (str "Value did not vatch any clause: " (pr-str ~'v)) {:expr ~'v}))))
            actual))))
+
+(deftest expansion-fns
+  (is (= `(and (sequential? ~'G__3022)
+               (= (count ~'G__3022) 3)
+               (= :add (if (indexed? ~'G__3022)
+                         (get ~'G__3022 0)
+                         (nth ~'G__3022 0))))
+         (v/match-pattern '[:add a b] 'G__3022)))
+  (is (= `(let [~'a (if (indexed? ~'G__3021)
+                      (get ~'G__3021 1)
+                      (nth ~'G__3021 1))
+                ~'b (if (indexed? ~'G__3021)
+                      (get ~'G__3021 2)
+                      (nth ~'G__3021 2))]
+            :body)
+         (v/let-pattern '[:add a b] 'G__3021 :body))))
 
 (deftest test-vatch
   (testing "basic examples"
