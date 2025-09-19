@@ -1,6 +1,10 @@
 (ns io.github.gaverhae.vatch
   (:require [clojure.walk :refer [postwalk]]))
 
+(defn fail
+  [pat]
+  (throw (ex-info "Unsupported pattern." {:pattern pat})))
+
 (defn literal-atom?
   [p]
   (or (keyword? p)
@@ -8,15 +12,22 @@
       (string? p)
       (nil? p)))
 
+(declare match-vector)
+
 (defn match-vector-pat-elems
   [pats r]
   (->> pats
        (map-indexed vector)
        (mapcat (fn [[idx pat]]
-                 (when (literal-atom? pat)
-                   [`(= ~pat (if (indexed? ~r)
-                               (get ~r ~idx)
-                               (nth ~r ~idx)))])))))
+                 (cond (literal-atom? pat) [`(= ~pat (if (indexed? ~r)
+                                                       (get ~r ~idx)
+                                                       (nth ~r ~idx)))]
+                       (symbol? pat) []
+                       (vector? pat) [`(let [~r (if (indexed? ~r)
+                                                  (get ~r ~idx)
+                                                  (nth ~r ~idx))]
+                                         ~(match-vector pat r))]
+                       :else (fail pat))))))
 
 (defn let-vector-pat-elems
   [pats r]
@@ -38,6 +49,7 @@
               "If & appears in a pattern, there can only be exactly one pattern after it.")
       `(and (sequential? ~r)
             (>= (count ~r) ~(count pre-pat))
+            ;; TODO: check post-pat
             ~@(match-vector-pat-elems pre-pat r)))
     `(and (sequential? ~r)
           (= (count ~r) ~(count pat))
@@ -58,7 +70,7 @@
   [pat r]
   (cond (symbol? pat) true
         (vector? pat) (match-vector pat r)
-        :else (throw (ex-info "Unsupported pattern." {:pattern pat}))))
+        :else (fail pat)))
 
 (defn let-pattern
   [pat r body]
