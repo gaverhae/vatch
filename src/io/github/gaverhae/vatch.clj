@@ -31,12 +31,21 @@
 
 (defn let-vector-pat-elems
   [pats r]
-  (->> (range (count pats))
-       (mapcat (fn [idx]
-                 (when (not (literal-atom? (get pats idx)))
-                   [(get pats idx) `(if (indexed? ~r)
-                                      (get ~r ~idx)
-                                      (nth ~r ~idx))])))))
+  (->> pats
+       (map-indexed vector)
+       (mapcat (fn [[idx pat]]
+                 (cond (literal-atom? pat) []
+                       (symbol? pat) [pat `(if (indexed? ~r)
+                                             (get ~r ~idx)
+                                             (nth ~r ~idx))]
+                       (vector? pat) (->> (let-vector-pat-elems pat r)
+                                          (partition 2)
+                                          (mapcat (fn [[sym expr]]
+                                                    [sym `(let [~r (if (indexed? ~r)
+                                                                     (get ~r ~idx)
+                                                                     (nth ~r ~idx))]
+                                                            ~expr)])))
+                       :else (fail pat))))))
 
 (defn match-vector
   [pat r]
@@ -56,15 +65,13 @@
           ~@(match-vector-pat-elems pat r))))
 
 (defn let-vector
-  [pat r body]
+  [pat r]
   (if (contains? (set pat) '&)
     (let [pre-pat (vec (take-while (fn [p] (not= '& p)) pat))
           post-pat (last pat)]
-      `(let [~@(let-vector-pat-elems pre-pat r)
-             ~post-pat (drop ~(count pre-pat) ~r)]
-         ~body))
-    `(let [~@(let-vector-pat-elems pat r)]
-       ~body)))
+      (concat (let-vector-pat-elems pre-pat r)
+              [post-pat `(drop ~(count pre-pat) ~r)]))
+    (let-vector-pat-elems pat r)))
 
 (defn match-pattern
   [pat r]
@@ -75,7 +82,8 @@
 (defn let-pattern
   [pat r body]
   (cond (symbol? pat) `(let [~pat ~r] ~body)
-        (vector? pat) (let-vector pat r body)))
+        (vector? pat) `(let [~@(let-vector pat r)]
+                         ~body)))
 
 (defmacro vatch
   "Pared-down version of core.match/match, specialized for variants. Assumes
