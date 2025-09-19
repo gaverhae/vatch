@@ -30,7 +30,7 @@
 (defmacro vatch
   "Pared-down version of core.match/match, specialized for variants. Assumes
    expr is a seq, with a fast path for vectors, and matches on length and all
-   top-level keywrods. Non-keyword elements of patterns are bound as per let.
+   top-level keywords. Non-keyword elements of patterns are bound as per let.
    Symbols are NOT captured. Use _ as pattern for default case.
 
    See tests for examples."
