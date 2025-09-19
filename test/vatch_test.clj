@@ -41,13 +41,29 @@
                     :else (throw (ex-info (str "Value did not vatch any clause: " (pr-str ~'v)) {:expr ~'v}))))
            actual))))
 
-(deftest expansion-fns
+(deftest expansion-match
   (is (= `(and (sequential? ~'G__3022)
                (= (count ~'G__3022) 3)
                (= :add (if (indexed? ~'G__3022)
                          (get ~'G__3022 0)
                          (nth ~'G__3022 0))))
          (v/match-pattern '[:add a b] 'G__3022)))
+  (is (= `(and (sequential? ~'G__1)
+               (= (count ~'G__1) 2)
+               (let [~'G__1 (if (indexed? ~'G__1)
+                              (get ~'G__1 0)
+                              (nth ~'G__1 0))]
+                 (and (sequential? ~'G__1)
+                      (= (count ~'G__1) 2)
+                      (= :symbol (if (indexed? ~'G__1)
+                                   (get ~'G__1 0)
+                                   (nth ~'G__1 0)))
+                      (= "x" (if (indexed? ~'G__1)
+                               (get ~'G__1 1)
+                               (nth ~'G__1 1))))))
+         (v/match-pattern '[[:symbol "x"] expr] 'G__1))))
+
+(deftest expansion-let
   (is (= `(let [~'a (if (indexed? ~'G__3021)
                       (get ~'G__3021 1)
                       (nth ~'G__3021 1))
