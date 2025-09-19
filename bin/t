@@ -8,10 +8,15 @@
   [dir]
   (p/exec "watchexec" "-w" "src" "-w" "test" "-c" "--" "clj" "-X:test"))
 
+(defn run-repl
+  [dir]
+  (p/exec "clj" "-M:repl"))
+
 (defn -main
   [dir & args]
   (cond
     (= ["test"] args) (run-tests dir)
+    (= ["repl"] args) (run-repl dir)
     :else (do (println "Unrecognized command:")
               (prn args)
               (System/exit 1))))
