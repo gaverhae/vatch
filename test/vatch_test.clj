@@ -71,7 +71,36 @@
                       (get ~'G__3021 2)
                       (nth ~'G__3021 2))]
             :body)
-         (v/let-pattern '[:add a b] 'G__3021 :body))))
+         (v/let-pattern '[:add a b] 'G__3021 :body)))
+  (is (= `(let [~'a (if (indexed? ~'G__3011)
+                      (get ~'G__3011 0)
+                      (nth ~'G__3011 0))
+                ~'b (let [~'G__3011 (if (indexed? ~'G__3011)
+                                      (get ~'G__3011 1)
+                                      (nth ~'G__3011 1))]
+                      (if (indexed? ~'G__3011)
+                        (get ~'G__3011 1)
+                        (nth ~'G__3011 1)))
+                ~'c (if (indexed? ~'G__3011)
+                      (get ~'G__3011 2)
+                      (nth ~'G__3011 2))
+                ~'d (let [~'G__3011 (if (indexed? ~'G__3011)
+                                      (get ~'G__3011 4)
+                                      (nth ~'G__3011 4))]
+                      (let [~'G__3011 (if (indexed? ~'G__3011)
+                                        (get ~'G__3011 1)
+                                        (nth ~'G__3011 1))]
+                        (if (indexed? ~'G__3011)
+                          (get ~'G__3011 1)
+                          (nth ~'G__3011 1))))
+                ~'e (let [~'G__3011 (if (indexed? ~'G__3011)
+                                      (get ~'G__3011 4)
+                                      (nth ~'G__3011 4))]
+                      (if (indexed? ~'G__3011)
+                        (get ~'G__3011 2)
+                        (nth ~'G__3011 2)))]
+            :body)
+         (v/let-pattern '[a [:x b] c ["skip"] [:y [:z d] e]] 'G__3011 :body))))
 
 (deftest test-vatch
   (testing "basic examples"
@@ -119,7 +148,16 @@
     (let [f (fn [v]
               (vatch v
                 [:a b] b))]
-      (is (thrown? clojure.lang.ExceptionInfo (f [:does-not-match]))))))
+      (is (thrown? clojure.lang.ExceptionInfo (f [:does-not-match])))))
+  (testing "nested values"
+    (let [f (fn [v]
+              (vatch v
+                [[:symbol x] expr] [x expr]
+                otherwise :did-not-match))]
+      (is (= ["a" "expr"]
+             (f [[:symbol "a"] "expr"])))
+      (is (= :did-not-match
+             (f :ploup))))))
 
 (deftest test-fatch
   (testing "lambda match"
