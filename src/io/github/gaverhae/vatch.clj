@@ -28,21 +28,38 @@
                                       (nth ~r ~idx))])))))
 
 (defn match-vector
+  [pat r]
+  (if (contains? (set pat) '&)
+    (let [pre-pat (vec (take-while (fn [p] (not= '& p)) pat))
+          post-pat (last pat)]
+      `(and (sequential? ~r)
+            (>= (count ~r) ~(count pre-pat))
+            ~@(match-vector-pat-elems pre-pat r)))
+    `(and (sequential? ~r)
+          (= (count ~r) ~(count pat))
+          ~@(match-vector-pat-elems pat r))))
+
+(defn let-vector
   [pat r body]
   (if (contains? (set pat) '&)
     (let [pre-pat (vec (take-while (fn [p] (not= '& p)) pat))
           post-pat (last pat)]
-      [`(and (sequential? ~r)
-             (>= (count ~r) ~(count pre-pat))
-             ~@(match-vector-pat-elems pre-pat r))
-       `(let [~@(let-vector-pat-elems pre-pat r)
-              ~post-pat (drop ~(count pre-pat) ~r)]
-          ~body)])
-    [`(and (sequential? ~r)
-           (= (count ~r) ~(count pat))
-           ~@(match-vector-pat-elems pat r))
-     `(let [~@(let-vector-pat-elems pat r)]
-        ~body)]))
+      `(let [~@(let-vector-pat-elems pre-pat r)
+             ~post-pat (drop ~(count pre-pat) ~r)]
+         ~body))
+    `(let [~@(let-vector-pat-elems pat r)]
+       ~body)))
+
+(defn match-pattern
+  [pat r]
+  (cond (symbol? pat) true
+        (vector? pat) (match-vector pat r)
+        :else (throw (ex-info "Unsupported pattern." {:pattern pat}))))
+
+(defn let-pattern
+  [pat r body]
+  (cond (symbol? pat) `(let [~pat ~r] ~body)
+        (vector? pat) (let-vector pat r body)))
 
 (defmacro vatch
   "Pared-down version of core.match/match, specialized for variants. Assumes
@@ -57,9 +74,7 @@
        (cond
          ~@(->> (partition 2 clauses)
                 (mapcat (fn [[pat body]]
-                          (cond (symbol? pat) [true `(let [~pat ~r] ~body)]
-                                (vector? pat) (match-vector pat r body)
-                                :else (throw (ex-info "Unsupported pattern." {:pattern pat}))))))
+                          [(match-pattern pat r) (let-pattern pat r body)])))
          :else (throw (ex-info (str "Value did not vatch any clause: " (pr-str ~expr))
                                {:expr ~expr}))))))
 
