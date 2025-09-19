@@ -32,6 +32,10 @@
   (if (contains? (set pat) '&)
     (let [pre-pat (vec (take-while (fn [p] (not= '& p)) pat))
           post-pat (last pat)]
+      (assert (= 1 (->> pat (filter #(= '& %)) count))
+              "If & appears in a pattern, it must appear exactly once.")
+      (assert (= 2 (- (count pat) (count pre-pat)))
+              "If & appears in a pattern, there can only be exactly one pattern after it.")
       `(and (sequential? ~r)
             (>= (count ~r) ~(count pre-pat))
             ~@(match-vector-pat-elems pre-pat r)))
