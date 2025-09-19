@@ -2,6 +2,45 @@
   (:require [clojure.test :refer [deftest are is testing]]
             [io.github.gaverhae.vatch :refer [vatch fatch postvalk]]))
 
+(deftest expansion
+  (let [actual (macroexpand-1 `(vatch ~'v
+                                 [:add ~'a ~'b] [:add2 (+ ~'a ~'b)]
+                                 [:add ~'a ~'b ~'c] [:add3 (+ ~'a ~'b ~'c)]
+                                 ~'_ :no-match))
+        gs (-> actual second first)]
+    (is (= `(let [~gs ~'v]
+              (cond (and (sequential? ~gs)
+                         (= (count ~gs) 3)
+                         (= :add (if (indexed? ~gs)
+                                   (get ~gs 0)
+                                   (nth ~gs 0))))
+                    (let [~'a (if (indexed? ~gs)
+                                (get ~gs 1)
+                                (nth ~gs 1))
+                          ~'b (if (indexed? ~gs)
+                                (get ~gs 2)
+                                (nth ~gs 2))]
+                      [:add2 (+ ~'a ~'b)])
+                    (and (sequential? ~gs)
+                         (= (count ~gs) 4)
+                         (= :add (if (indexed? ~gs)
+                                   (get ~gs 0)
+                                   (nth ~gs 0))))
+                    (let [~'a (if (indexed? ~gs)
+                                (get ~gs 1)
+                                (nth ~gs 1))
+                          ~'b (if (indexed? ~gs)
+                                (get ~gs 2)
+                                (nth ~gs 2))
+                          ~'c (if (indexed? ~gs)
+                                (get ~gs 3)
+                                (nth ~gs 3))]
+                      [:add3 (+ ~'a ~'b ~'c)])
+                    true (let [~'_ ~gs]
+                           :no-match)
+                    :else (throw (ex-info (str "Value did not vatch any clause: " (pr-str ~'v)) {:expr ~'v}))))
+           actual))))
+
 (deftest test-vatch
   (testing "basic examples"
     (let [f (fn [v]
