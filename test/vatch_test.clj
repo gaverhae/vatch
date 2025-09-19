@@ -2,9 +2,6 @@
   (:require [clojure.test :refer [deftest are is testing]]
             [io.github.gaverhae.vatch :refer [vatch fatch postvalk]]))
 
-;; Real test would need alpha-equivalence, which is a bit more work than I'm
-;; willing to put in right now. So, instead, examples.
-
 (deftest test-vatch
   (testing "basic examples"
     (let [f (fn [v]
