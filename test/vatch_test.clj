@@ -1,6 +1,6 @@
 (ns vatch-test
   (:require [clojure.test :refer [deftest are is testing]]
-            [io.github.gaverhae.vatch :as v :refer [vatch fatch postvalk]]))
+            [io.github.gaverhae.vatch :as v :refer [vatch fatch postvalk vatch->]]))
 
 (deftest expansion
   (let [actual (macroexpand-1 `(vatch ~'v
@@ -179,3 +179,9 @@
              [:<> & args] args
              [:ul & args] `[:ul.list-disc.ml-6 ~@args]
              _ _)))))
+
+(deftest test-vatch->
+  (is (= [:ploup [2]]
+         (vatch-> t [(+ 1 1)]
+           [2] [:ploup t]
+           otherwise :fail))))
