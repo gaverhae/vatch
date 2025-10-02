@@ -30,6 +30,8 @@
                                          ~(match-vector pat r))]
                        :else (fail pat))))))
 
+(declare let-vector)
+
 (defn let-vector-pat-elems
   [pats r]
   (->> pats
@@ -39,7 +41,7 @@
                        (symbol? pat) [pat `(if (indexed? ~r)
                                              (get ~r ~idx)
                                              (nth ~r ~idx))]
-                       (vector? pat) (->> (let-vector-pat-elems pat r)
+                       (vector? pat) (->> (let-vector pat r)
                                           (partition 2)
                                           (mapcat (fn [[sym expr]]
                                                     [sym `(let [~r (if (indexed? ~r)

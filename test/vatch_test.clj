@@ -158,6 +158,10 @@
              (f [[:symbol "a"] "expr"])))
       (is (= :did-not-match
              (f :ploup)))))
+  (testing "nested rest-params"
+    (is (= [[[:symbol "x"]] [[:list [:symbol "inc"] [:symbol "x"]]]]
+           (vatch [:list [:symbol "fn"] [:vector [:symbol "x"]] [:list [:symbol "inc"] [:symbol "x"]]]
+             [:list [:symbol "fn"] [:vector & syms] & body] [syms body]))))
   (testing "literals"
     (is (= :ploup
            (vatch [:a 1 2]
