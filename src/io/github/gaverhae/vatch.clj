@@ -121,3 +121,8 @@
   (let [default (gensym)]
     `(postwalk (fatch ~@clauses ~default ~default)
                ~expr)))
+
+(defmacro vatch->
+  [sym expr & clauses]
+  `(let [~sym ~expr]
+     (vatch ~sym ~@clauses)))
