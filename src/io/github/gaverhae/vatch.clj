@@ -10,6 +10,7 @@
   (or (keyword? p)
       (number? p)
       (string? p)
+      (boolean? p)
       (nil? p)))
 
 (declare match-vector)

@@ -157,7 +157,19 @@
       (is (= ["a" "expr"]
              (f [[:symbol "a"] "expr"])))
       (is (= :did-not-match
-             (f :ploup))))))
+             (f :ploup)))))
+  (testing "literals"
+    (is (= :ploup
+           (vatch [:a 1 2]
+             [:a 0 0] :zero
+             [:b 1 2] :nope
+             [:a 1 2] :ploup
+             otherwise :nothing)))
+    (is (= :ploup
+           (vatch [true false]
+             [true true] :nope
+             [true false] :ploup
+             otherwise :whatev)))))
 
 (deftest test-fatch
   (testing "lambda match"
