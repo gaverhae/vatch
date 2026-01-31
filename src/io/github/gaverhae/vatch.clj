@@ -103,8 +103,17 @@
                                {:expr ~expr}))))))
 
 (defmacro fatch
+  "Convenience macro for cases where you need a function of a single argument,
+   and the only thing you do with it is pass it as the first argument to
+   `vatch`. Binds `!` as the fn name for recursion. I.e.
+
+       (fatch [:kw a] (println a))
+
+   is equivalent to:
+
+       (fn ! [arg#] (vatch arg# [:kw a] (println a)))"
   [& forms]
-  `(fn [arg#]
+  `(fn ~'! [arg#]
      (vatch arg# ~@forms)))
 
 (defmacro postvalk
